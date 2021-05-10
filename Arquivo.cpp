@@ -662,9 +662,58 @@ Bucket GerenciadorArquivo::LinkIndexToMain(unsigned int pos, Bucket b){
                           temp.pBuckets++;
                       }
                       else{
-                          
+                          /*
+                          * Realiza o rehash com todos os elemtenos conectados a raiz. A raiz é a posição no vetor do diretório que irá referenciar
+                          * a nova página a ser inserida. Os elementos conectados/referenciados a raiz podem ser obtidos da seguinte forma:
+                          * 
+                          * elemento = raiz + pow(2,quantidade_de_bits) / 2
+                          * 
+                          * a quantidade de bits está no seguinte intervalo:
+                          * 
+                          * quantidade_de_bits_da_raiz < quantidade_de_bits <= profundidade global
+                          * 
+                          * OBS: para calcular todos os elementos é necessário que a quantidade_de_bits assuma todos os valores possíveis do intervalo.
+                          * Isso é parte da função is_linked.
+                          */
+                         if(is_linked(key,numberOfBits + 1, temp2.b[i].cpf, temp2.pDepth + 1)){
+                             temp.b[temp.pBuckets] = temp2.b[i];
+                             temp2.pBuckets--;
+                             temp.pBuckets++;
+                         }
+                         else{
+                             /*
+                             * Caso o rehash não seja bem sucedido, significa que o bucket deve permanacer na página antiga.
+                             * A página que assuira o papel de "página antiga" será a temp3. Ou seja, o bucket que não teve o CPF bem sucesdido no
+                             * no rehash será transferido para o temp3 e posteriormente reescreito no lugar da página antiga. 
+                             */
+                            temp3.b[temp3.pBuckets] = temp2.b[i];
+                            temp3.pBuckets++;                       //Incrementa o contador de bucktes.
+                         }
                       }
                   }
+
+                  temp3.pDepth = temp2.pDepth + 1;                  //Define a profundidade nova da página antiga.
+                  temp.pDepth = numberOfBits;                       //Define a profundidade inicial da página nova a ser inserida.
+
+                  if(key != 0){
+                      i = numberOfBits + 1;
+                  }
+                  else{
+                      i = numberOfBits;
+                  }
+
+                  /*
+                  * O loop abaixo é responsável por tentar recalcular a profundiade da nova página a ser inserida. Isso se faz necessário
+                  * pois a profundidade local da nova página aser inserida depende diretamente de quantos ponteiros estarão referenciando ela.
+                  * Ou seja, inicialmente se a profundiade da nova página é o número de bits para representar a posição no vetor do diretório que
+                  * irá referenciar a nova página. Sendo assim, se essa quantidade de bits for menor que a profundiade local isso quer dizer que a 
+                  * nova página pode ter mais um ponteiro apontado para ela além do que já foi definido. Entretanto, este ponteiro a mais, já pode
+                  * ter sido atraibuido o endereço de uma nova página anteriormente criada. Sendo este o caso, essa página não será referenciada por
+                  * esses ponteiros que já tiverem sido atribuidos o endereço de uma nova página.
+                  * 
+                  * OBS.: Os ponteiros "extras" que podem ou não apontar para a nova página a ser criada são aqueles que se relacionam/referenciam ao
+                  * ponteiro raiz inicialmente definido para abrigar o endereço da nova página. 
+                  */
               }
            }
         }
